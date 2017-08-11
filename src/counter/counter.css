@@ -1,0 +1,10 @@
+.counter {
+    display: inline-block;
+    padding: 1em;
+    background-color: antiquewhite;
+}
+
+.counter-value {
+    color: green;
+    text-align: center;
+}
