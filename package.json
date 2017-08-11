@@ -1,15 +1,14 @@
 {
   "name": "tsf-web",
-  "version": "0.0.2",
+  "license": "MIT",
+  "version": "0.0.3",
   "description": "TypeScript Web Framework",
-  "main": "src/index.ts",
+  "main": "src/app.ts",
   "scripts": {
     "build": "NODE_ENV='production' node_modules/.bin/webpack -p",
     "serve": "node_modules/.bin/webpack-dev-server"
   },
-  "keywords": [],
   "author": "Stanislav Kondratyuk",
-  "license": "MIT",
   "repository": "https://github.com/stan-kondrat/tsf.git",
   "dependencies": {
     "@types/node": "^8.0.20",
