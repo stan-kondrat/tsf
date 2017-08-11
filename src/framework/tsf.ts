@@ -1,4 +1,11 @@
 
+const events = [];
+for (const key in document) {
+    if (key.startsWith('on')) {
+        events.push(key);
+    }
+}
+
 export default class TSF {
     private element;
 
@@ -7,7 +14,7 @@ export default class TSF {
     }
 
     public add(component) {
-        let template = component.template;
+        let template = component.$template;
 
         // add data bindings
         let bindId = 0;
@@ -28,28 +35,41 @@ export default class TSF {
         // watch variables
         const dataStore = {};
         for (const attr in component) {
-            if (attr === 'template' || !component.hasOwnProperty(attr)) { continue; }
+            if (attr === '$template' || !component.hasOwnProperty(attr)) { continue; }
             dataStore[attr] = component[attr];
             Object.defineProperty(component, attr, {
                 get() {
                     return dataStore[attr];
                 },
                 set(value) {
-                    for (const id of Object.keys(bindings)) {
-                        if (bindings[id].expr.indexOf(attr) !== -1) {
-                            bindings[id].node.data = bindings[id].func.call(component);
+                    dataStore[attr] = value;
+                    const bindingsToUpdate: Array<{nodeId, nodeData}> = [];
+                    for (const nodeId of Object.keys(bindings)) {
+                        if (bindings[nodeId].expr.indexOf(attr) !== -1) {
+                            const nodeData = bindings[nodeId].func.call(component);
+                            bindingsToUpdate.push({nodeId, nodeData});
                         }
                     }
-                    dataStore[attr] = value;
+                    // update DOM asynchronously
+                    requestAnimationFrame(() => {
+                        while (bindingsToUpdate.length) {
+                            const binding = bindingsToUpdate.pop();
+                            bindings[binding.nodeId].node.data = binding.nodeData;
+                        }
+                    });
                 },
             });
         }
 
         // add event liseners
-        const matches = this.element.querySelectorAll('[\\$onclick]');
-        [].forEach.call(matches, (match) => {
-            const listener = new Function('$event', match.getAttribute('$onclick'));
-            match.addEventListener('click', (event) => listener.call(component, event));
-        });
+        for (const event of events) {
+            const matches = this.element.querySelectorAll('[\\$' + event + ']');
+            [].forEach.call(matches, (match) => {
+                const listener = new Function('$event', match.getAttribute('$' + event));
+                match.addEventListener(event.substring(2), ($event) => {
+                    requestAnimationFrame(() => listener.call(component, $event));
+                });
+            });
+        }
     }
 }

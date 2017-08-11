@@ -1,12 +1,18 @@
-import Counter from './counter/counter';
 import TSF from './framework/tsf';
 
-const rootElement = document.getElementById('app');
+// components
+import Counter from './components/counter/counter';
+import ToUpperCaseFrom from './components/toUpperCaseFrom';
 
+// render application to DOM element
+const rootElement = document.getElementById('app');
 const app = new TSF(rootElement);
 
+// initialized components
 const counter = new Counter();
+const toUpperCaseFrom = new ToUpperCaseFrom();
 
-app.add(counter);
+app.add(toUpperCaseFrom);
 
-setInterval( () => counter.value++, 1000 );
+// custom logic
+// setInterval( () => counter.value++, 1000 );
