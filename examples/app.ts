@@ -1,4 +1,4 @@
-import TSF from './framework/tsf';
+import TSF from '../src/tsf';
 
 // components
 import Counter from './components/counter/counter';

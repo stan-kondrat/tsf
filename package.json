@@ -1,9 +1,9 @@
 {
   "name": "tsf-web",
   "license": "MIT",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "TypeScript Web Framework",
-  "main": "src/app.ts",
+  "main": "src/tsf.ts",
   "scripts": {
     "build": "NODE_ENV='production' node_modules/.bin/webpack -p",
     "serve": "node_modules/.bin/webpack-dev-server"
