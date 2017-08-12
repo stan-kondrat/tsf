@@ -11,8 +11,8 @@ export default class TSF {
     private initializedComponents = new Map();
     private componentClasses = new Map();
 
-    constructor(element) {
-        this.rootElement = element;
+    constructor(selector) {
+        this.rootElement = document.querySelector(selector);
     }
 
     public register(name, componentClass) {
@@ -23,7 +23,7 @@ export default class TSF {
         this.initializedComponents.set(name, componentInstance);
     }
 
-    public root(component) {
+    public run(component) {
         this.process(this.rootElement, component);
     }
 

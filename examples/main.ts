@@ -6,7 +6,7 @@ import IndexPage from './components/indexPage';
 import ToUpperCaseFrom from './components/toUpperCaseFrom';
 
 // render application to DOM element
-const app = new TSF(document.getElementById('app'));
+const app = new TSF('#app');
 
 // register component classes
 app.register('counter', Counter);
@@ -19,7 +19,7 @@ app.component('timer', timer);
 app.component('hello', hello);
 
 // set root component
-app.root(new IndexPage());
+app.run(new IndexPage());
 
 // run custom logic
 hello.text = 'custom text';
