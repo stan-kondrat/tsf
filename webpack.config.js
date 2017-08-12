@@ -16,7 +16,7 @@ const config = {
     },
     module: {
         rules: [
-            { test: /\.ts$/, loaders: ['babel-loader?presets[]=es2015', 'ts-loader'] },
+            { test: /\.ts$/, loaders: ['babel-loader?presets[]=es2015,plugins[]=add-module-exports', 'ts-loader'] },
             { test: /\.ts$/, use: 'tslint-loader', enforce: 'pre'},
             { test: /\.html$/, use: 'raw-loader' },
             { test: /\.css$/, use: ['style-loader', 'css-loader'] }
