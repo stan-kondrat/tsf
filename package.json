@@ -1,7 +1,7 @@
 {
   "name": "tsf-web",
   "license": "MIT",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "TypeScript Web Framework",
   "main": "src/tsf.ts",
   "scripts": {

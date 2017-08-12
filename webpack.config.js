@@ -7,6 +7,7 @@ const config = {
         examples: './examples/main.ts'
     },
     output: {
+        library: 'TSF',
         filename: '[name].js',
         path: path.resolve(__dirname, 'dist')
     },
