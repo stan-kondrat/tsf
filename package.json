@@ -5,6 +5,7 @@
   "description": "TypeScript Web Framework",
   "main": "src/tsf.ts",
   "scripts": {
+    "docs": "node_modules/.bin/docsify serve docs",
     "build": "NODE_ENV='production' node_modules/.bin/webpack -p",
     "serve": "node_modules/.bin/webpack-dev-server"
   },

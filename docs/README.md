@@ -1,11 +1,20 @@
 # TSF - TypeScript Web Framework
-> An lightweight web framework for TypeScript
+> An lightweight web framework *~5kB!* 🏄
 
-## Quick Start Guide
+## Quick Start Examples
 
-### Component-based web framework
+### Component-based web framework 
 
 <script async src="//jsfiddle.net/StanKondrat/a7818nw3/1/embed/js,html,result/"></script>
+
+Store templates in separate files:
+```typescript
+const template = require('./template.html');
+class Main {
+    public $template = template;
+}
+
+```
 
 ### One-way data-binding
 
