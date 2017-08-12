@@ -2,9 +2,12 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const config = {
-    entry: './examples/app.ts',
+    entry: {
+        tsf: './src/tsf.ts',
+        examples: './examples/main.ts'
+    },
     output: {
-        filename: 'bundle.js',
+        filename: '[name].js',
         path: path.resolve(__dirname, 'dist')
     },
     resolve: {
@@ -12,7 +15,7 @@ const config = {
     },
     module: {
         rules: [
-            { test: /\.ts$/, use: 'ts-loader' },
+            { test: /\.ts$/, loaders: ['babel-loader?presets[]=es2015', 'ts-loader'] },
             { test: /\.ts$/, use: 'tslint-loader', enforce: 'pre'},
             { test: /\.html$/, use: 'raw-loader' },
             { test: /\.css$/, use: ['style-loader', 'css-loader'] }
