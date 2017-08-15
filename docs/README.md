@@ -1,5 +1,5 @@
 # TSF - TypeScript Web Framework
-> An lightweight web framework *~5kB!* 🏄
+> An lightweight web framework :surfer: *1.8 kB (minified and gzipped)*
 
 ## Quick Start Examples
 
