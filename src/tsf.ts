@@ -24,29 +24,37 @@ export default class TSF {
     }
 
     public run(component) {
-        this.process(this.rootElement, component);
+        this.process(component, this.rootElement);
     }
 
-    private process(domElement, component) {
-        let template = component.$template;
+    private process(component, domElement) {
+        domElement.innerHTML = component.$template;
+        const textNodesBindings = this.processTextNodes(component, domElement);
+        this.processWatchVariables(component, textNodesBindings);
+        this.processEvents(component, domElement);
+        this.processComponents(domElement);
+    }
 
-        // add data bindings
+    private processTextNodes(component, domElement) {
         let bindId = 0;
         const bindings = {};
-        template = template.replace(new RegExp('\{\{([^}]+)\}\}', 'g'), (match, expr) => {
+        console.log(domElement)
+        domElement.innerHTML = domElement.innerHTML.replace(new RegExp('\{\{([^}]+)\}\}', 'g'), (match, expr) => {
             bindId++;
             bindings[bindId] = { expr };
             return `<div bind-id="${bindId}">bindId-${bindId}</div>`;
         });
-        domElement.innerHTML = template;
+        console.log(domElement)
         for (const id of Object.keys(bindings)) {
             bindings[id].func = new Function('', 'return ' + bindings[id].expr);
             bindings[id].node = document.createTextNode('');
             bindings[id].node.data = bindings[id].func.call(component);
             domElement.querySelector(`[bind-id='${id}']`).replaceWith(bindings[id].node);
         }
+        return bindings;
+    }
 
-        // watch variables
+    private processWatchVariables(component, textNodesBindings) {
         const dataStore = {};
         for (const attr in component) {
             if (attr === '$template' || !component.hasOwnProperty(attr)) { continue; }
@@ -58,9 +66,9 @@ export default class TSF {
                 set(value) {
                     dataStore[attr] = value;
                     const bindingsToUpdate: Array<{nodeId, nodeData}> = [];
-                    for (const nodeId of Object.keys(bindings)) {
-                        if (bindings[nodeId].expr.indexOf(attr) !== -1) {
-                            const nodeData = bindings[nodeId].func.call(component);
+                    for (const nodeId of Object.keys(textNodesBindings)) {
+                        if (textNodesBindings[nodeId].expr.indexOf(attr) !== -1) {
+                            const nodeData = textNodesBindings[nodeId].func.call(component);
                             bindingsToUpdate.push({nodeId, nodeData});
                         }
                     }
@@ -68,14 +76,15 @@ export default class TSF {
                     requestAnimationFrame(() => {
                         while (bindingsToUpdate.length) {
                             const binding = bindingsToUpdate.pop();
-                            bindings[binding.nodeId].node.data = binding.nodeData;
+                            textNodesBindings[binding.nodeId].node.data = binding.nodeData;
                         }
                     });
                 },
             });
         }
+    }
 
-        // add event liseners
+    private processEvents(component, domElement) {
         for (const event of events) {
             const matches = domElement.querySelectorAll('[\\$' + event + ']');
             [].forEach.call(matches, (match) => {
@@ -86,18 +95,19 @@ export default class TSF {
                 });
             });
         }
+    }
 
-        // process components
+    private processComponents(domElement) {
         for (const [name, componentInstance] of this.initializedComponents) {
             const element = domElement.querySelector(name);
             if (element) {
-                this.process(element, componentInstance);
+                this.process(componentInstance, element);
             }
         }
         for (const [name, componentClass] of this.componentClasses) {
             const matches = domElement.querySelectorAll(name);
             [].forEach.call(matches, (element) => {
-                this.process(element, new componentClass());
+                this.process(new componentClass(), element);
             });
         }
     }
