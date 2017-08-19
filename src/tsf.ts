@@ -1,3 +1,4 @@
+import ObservableStructure from './observer';
 
 const events = [];
 for (const key in document) {
@@ -30,7 +31,7 @@ export default class TSF {
     private process(component, domElement) {
         domElement.innerHTML = component.$template;
         const textNodesBindings = this.processTextNodes(component, domElement);
-        this.processWatchVariables(component, textNodesBindings);
+        const _ = new ObservableStructure(component, textNodesBindings);
         this.processEvents(component, domElement);
         this.processComponents(domElement);
     }
@@ -52,36 +53,6 @@ export default class TSF {
             domElement.querySelector(`[bind-id='${id}']`).replaceWith(bindings[id].node);
         }
         return bindings;
-    }
-
-    private processWatchVariables(component, textNodesBindings) {
-        const dataStore = {};
-        for (const attr in component) {
-            if (attr === '$template' || !component.hasOwnProperty(attr)) { continue; }
-            dataStore[attr] = component[attr];
-            Object.defineProperty(component, attr, {
-                get() {
-                    return dataStore[attr];
-                },
-                set(value) {
-                    dataStore[attr] = value;
-                    const bindingsToUpdate: Array<{nodeId, nodeData}> = [];
-                    for (const nodeId of Object.keys(textNodesBindings)) {
-                        if (textNodesBindings[nodeId].expr.indexOf(attr) !== -1) {
-                            const nodeData = textNodesBindings[nodeId].func.call(component);
-                            bindingsToUpdate.push({nodeId, nodeData});
-                        }
-                    }
-                    // update DOM asynchronously
-                    requestAnimationFrame(() => {
-                        while (bindingsToUpdate.length) {
-                            const binding = bindingsToUpdate.pop();
-                            textNodesBindings[binding.nodeId].node.data = binding.nodeData;
-                        }
-                    });
-                },
-            });
-        }
     }
 
     private processEvents(component, domElement) {
