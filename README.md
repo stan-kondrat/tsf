@@ -1,6 +1,8 @@
 # TSF - TypeScript Web Framework
 > An lightweight web framework for TypeScript :surfer: 1.8 kB (minified and gzipped),
 
+[![Build Status](https://travis-ci.org/stan-kondrat/tsf.svg)](https://travis-ci.org/stan-kondrat/tsf)
+
 Documentation and Examples - https://stan-kondrat.github.io/tsf
 
 ```typescript
