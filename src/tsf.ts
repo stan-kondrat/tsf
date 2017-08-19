@@ -39,13 +39,11 @@ export default class TSF {
     private processTextNodes(component, domElement) {
         let bindId = 0;
         const bindings = {};
-        console.log(domElement)
         domElement.innerHTML = domElement.innerHTML.replace(new RegExp('\{\{([^}]+)\}\}', 'g'), (match, expr) => {
             bindId++;
             bindings[bindId] = { expr };
             return `<div bind-id="${bindId}">bindId-${bindId}</div>`;
         });
-        console.log(domElement)
         for (const id of Object.keys(bindings)) {
             bindings[id].func = new Function('', 'return ' + bindings[id].expr);
             bindings[id].node = document.createTextNode('');

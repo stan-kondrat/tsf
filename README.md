@@ -7,14 +7,19 @@ Documentation and Examples - https://stan-kondrat.github.io/tsf
 const app = new TSF('#app');
 
 class Main {
-    public $template = `<button $onclick="this.handler()">Click me</button>`;
+    public $template = `<button $onclick="this.plus()">Plus</button> {{ this.counter }}`;
+    public counter = 0;
     
-    handler() {
-    	alert('Clicked!');
+    plus() {
+        this.counter++; // DOM will updated automatically
     }
 }
 
-app.run(new Main());
+const main = new Main();
+
+app.run(main); // Render application root component
+
+main.counter = 100; // DOM will updated automatically
 ```
 
 ## Installing / Getting started
