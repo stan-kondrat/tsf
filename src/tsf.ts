@@ -36,19 +36,26 @@ export default class TSF {
         this.processComponents(domElement);
     }
 
-    private processTextNodes(component, domElement) {
+    private processTextNodes(component, domElement, customVarNames = [], customVarValues = []) {
         let bindId = 0;
         const bindings = {};
         domElement.innerHTML = domElement.innerHTML.replace(new RegExp('\{\{([^}]+)\}\}', 'g'), (match, expr) => {
-            bindId++;
-            bindings[bindId] = { expr };
+            bindings[++bindId] = {
+                expr,
+                component,
+                customVarNames,
+                customVarValues,
+                textNode: document.createTextNode(''),
+                evalFunction: new Function(customVarNames.join(','), 'return ' + expr),
+                compile: function apply() {
+                    this.textNode.data = this.evalFunction.apply(this.component, this.customVarValues);
+                },
+            };
+            bindings[bindId].compile();
             return `<div bind-id="${bindId}">bindId-${bindId}</div>`;
         });
         for (const id of Object.keys(bindings)) {
-            bindings[id].func = new Function('', 'return ' + bindings[id].expr);
-            bindings[id].node = document.createTextNode('');
-            bindings[id].node.data = bindings[id].func.call(component);
-            domElement.querySelector(`[bind-id='${id}']`).replaceWith(bindings[id].node);
+            domElement.querySelector(`[bind-id='${id}']`).replaceWith(bindings[id].textNode);
         }
         return bindings;
     }
