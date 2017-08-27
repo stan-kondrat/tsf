@@ -1,3 +1,4 @@
+import { IBinding, IBindings } from './interfaces';
 import ObservableStructure from './observer';
 
 const events = [];
@@ -38,9 +39,10 @@ export default class TSF {
 
     private processTextNodes(component, domElement, customVarNames = [], customVarValues = []) {
         let bindId = 0;
-        const bindings = {};
+        const bindings: IBindings = {};
         domElement.innerHTML = domElement.innerHTML.replace(new RegExp('\{\{([^}]+)\}\}', 'g'), (match, expr) => {
-            bindings[++bindId] = {
+            bindId++;
+            const binding: IBinding = {
                 expr,
                 component,
                 customVarNames,
@@ -51,6 +53,7 @@ export default class TSF {
                     this.textNode.data = this.evalFunction.apply(this.component, this.customVarValues);
                 },
             };
+            bindings[bindId] = binding;
             bindings[bindId].compile();
             return `<div bind-id="${bindId}">bindId-${bindId}</div>`;
         });

@@ -1,9 +1,12 @@
+import { IBindings } from './interfaces';
+
+const nextFrame = window.requestAnimationFrame || ((callback) => window.setTimeout(callback, 0));
+
 export default class ObservableStructure {
     private dataStore = {};
     private bindingsByAttr = {};
 
-
-    constructor(obj, bindings) {
+    constructor(obj, bindings: IBindings) {
         this.observe(obj, bindings, 'this.');
     }
 
@@ -38,7 +41,7 @@ export default class ObservableStructure {
                     }
 
                     // update DOM asynchronously
-                    requestAnimationFrame(() => {
+                    nextFrame(() => {
                         let attr = attrFullName;
                         let parentAttrPosition;
                         do {
@@ -57,5 +60,4 @@ export default class ObservableStructure {
     private isObject(obj) {
         return {}.toString.apply(obj) === '[object Object]';
     }
-
 }
