@@ -1,4 +1,5 @@
-import { JSDOM } from 'jsdom';
+const jsdom = require('jsdom');
+const { JSDOM } = jsdom;
 import { IBindings } from './interfaces';
 import ObservableStructure from './observer';
 
@@ -8,7 +9,7 @@ async function timeout(time = 50) {
 
 const prepareBindings = (component, expr) => {
     const window = (new JSDOM(`<!DOCTYPE html>textNode`)).window;
-    const bindings = {
+    const bindings: IBindings = {
         0: {
             expr,
             component,
@@ -53,7 +54,7 @@ test('Observable Object', async () => {
     const { window, bindings } = prepareBindings(component, 'JSON.stringify(this.data)');
     const _ = new ObservableStructure(component, bindings);
 
-    component.data = { a: 'a': b: 'b' };
+    component.data = { a: 'a', b: 'b' };
     await timeout();
     expect(window.document.body.innerHTML).toEqual('{"a":"a","b":"b"}');
 

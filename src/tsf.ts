@@ -1,4 +1,4 @@
-import { IBinding, IBindings } from './interfaces';
+import { IBindings } from './interfaces';
 import ObservableStructure from './observer';
 
 const events = [];
@@ -42,7 +42,7 @@ export default class TSF {
         const bindings: IBindings = {};
         domElement.innerHTML = domElement.innerHTML.replace(new RegExp('\{\{([^}]+)\}\}', 'g'), (match, expr) => {
             bindId++;
-            const binding: IBinding = {
+            bindings[bindId] = {
                 expr,
                 component,
                 customVarNames,
@@ -53,7 +53,6 @@ export default class TSF {
                     this.textNode.data = this.evalFunction.apply(this.component, this.customVarValues);
                 },
             };
-            bindings[bindId] = binding;
             bindings[bindId].compile();
             return `<div bind-id="${bindId}">bindId-${bindId}</div>`;
         });

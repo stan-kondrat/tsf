@@ -1,18 +1,58 @@
 import { IBindings } from './interfaces';
-
-const nextFrame = window.requestAnimationFrame || ((callback) => window.setTimeout(callback, 0));
+import nextFrame from './nextFrame';
 
 export default class ObservableStructure {
-    private dataStore = {};
+
+    private static isObject(obj) {
+        return Object.prototype.toString.apply(obj) === '[object Object]';
+    }
+
+    private static isArray(obj) {
+        return Object.prototype.toString.apply(obj) === '[object Array]';
+    }
+
     private bindingsByAttr = {};
 
     constructor(obj, bindings: IBindings) {
-        this.observe(obj, bindings, 'this.');
+        this.observeObject(obj, bindings, 'this.');
     }
 
-    private observe(obj, bindings, attrParent: string) {
+    private observe(obj, bindings, attrFullName) {
+        if (ObservableStructure.isObject(obj)) {
+            this.observeObject(obj, bindings, attrFullName);
+        }
+        if (ObservableStructure.isArray(obj)) {
+            this.observeArray(obj, bindings, attrFullName);
+        }
+    }
+
+    private compileBinding(attrFullName) {
+        // update DOM asynchronously
+        nextFrame(() => {
+            let attr = attrFullName;
+            let parentAttrPosition;
+            do {
+                for (const binding of this.bindingsByAttr[attr]) {
+                    binding.compile();
+                }
+                parentAttrPosition = attr.lastIndexOf('.');
+                attr = attrFullName.substr(0, parentAttrPosition);
+            } while (parentAttrPosition !== 4); // 'this.'
+        });
+    }
+
+    private observeObject(obj, bindings, attrParent: string) {
+        const $data = {};
+        Object.defineProperty(obj, '$data', {value: $data, writable: true});
+
         for (const attrName in obj) {
-            if (attrName === '$template' || !obj.hasOwnProperty(attrName)) { continue; }
+            if (!obj.hasOwnProperty(attrName)) {
+                continue;
+            }
+
+            if (attrName === '$template' || attrName === '$data') {
+                continue;
+            }
 
             const attrFullName = attrParent + attrName; // this.foo.bar.attrName
 
@@ -23,41 +63,25 @@ export default class ObservableStructure {
                 }
             }
 
-            this.dataStore[attrFullName] = obj[attrName];
+            $data[attrFullName] = obj[attrName];
 
-            if (this.isObject(obj[attrName])) {
-                this.observe(obj[attrName], bindings, attrFullName + '.');
-            }
+            this.observe(obj[attrName], bindings, attrFullName + '.');
 
             Object.defineProperty(obj, attrName, {
                 get: () => {
-                    return this.dataStore[attrFullName];
+                    return $data[attrFullName];
                 },
                 set: (value) => {
-                    this.dataStore[attrFullName] = value;
+                    $data[attrFullName] = value;
 
-                    if (this.isObject(value)) {
-                        this.observe(value, bindings, attrFullName + '.');
-                    }
-
-                    // update DOM asynchronously
-                    nextFrame(() => {
-                        let attr = attrFullName;
-                        let parentAttrPosition;
-                        do {
-                            for (const binding of this.bindingsByAttr[attr]) {
-                                binding.compile();
-                            }
-                            parentAttrPosition = attr.lastIndexOf('.');
-                            attr = attrFullName.substr(0, parentAttrPosition);
-                        } while (parentAttrPosition !== 4); // 'this.'
-                    });
+                    this.observe(value, bindings, attrFullName + '.');
+                    this.compileBinding(attrFullName);
                 },
             });
         }
     }
 
-    private isObject(obj) {
-        return {}.toString.apply(obj) === '[object Object]';
+    private observeArray(arr, bindings, attrParent: string) {
+        // TODO
     }
 }
