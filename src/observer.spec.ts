@@ -120,10 +120,10 @@ test('Observable Array Push', async () => {
     expect(window.document.body.innerHTML).toEqual('["A","b","c"]');
 });
 
-xtest('Observable Array Splice', async () => {
-    expect.assertions(14);
-    const component: { data: any } = { data: [] };
-    const { window, bindings } = prepareBindings(component, 'JSON.stringify(this.data)');
+test('Observable Array Splice - 1', async () => {
+    expect.assertions(6);
+    const component: { data: any } = {data: []};
+    const {window, bindings} = prepareBindings(component, 'JSON.stringify(this.data)');
     const _ = new ObservableStructure(component, bindings);
     let removed;
 
@@ -146,35 +146,51 @@ xtest('Observable Array Splice', async () => {
     removed = component.data.splice(2, 1, 'trumpet');
     expect(removed).toEqual(['drum']);
     await timeout();
-    expect(window.document.body.innerHTML).toEqual('["angel", "clown", "trumpet", "sturgeon"]');
+    expect(window.document.body.innerHTML).toEqual('["angel","clown","trumpet","sturgeon"]');
+});
+
+xtest('Observable Array Splice - 2', async () => {
+    expect.assertions(1);
+    const component: { data: any } = {data: []};
+    const {window, bindings} = prepareBindings(component, 'JSON.stringify(this.data)');
+    const _ = new ObservableStructure(component, bindings);
+    let removed;
 
     // Remove 2 elements from index 0, and insert "parrot", "anemone" and "blue"
     component.data = ['angel', 'clown', 'trumpet', 'sturgeon'];
     removed = component.data.splice(0, 2, 'parrot', 'anemone', 'blue');
     expect(removed).toEqual(['angel', 'clown']);
     await timeout();
-    expect(window.document.body.innerHTML).toEqual('["parrot", "anemone", "blue", "trumpet", "sturgeon"]');
+    expect(window.document.body.innerHTML).toEqual('["parrot","anemone","blue","trumpet","sturgeon"]');
+});
+
+test('Observable Array Splice - 3', async () => {
+    expect.assertions(6);
+    const component: { data: any } = {data: []};
+    const {window, bindings} = prepareBindings(component, 'JSON.stringify(this.data)');
+    const _ = new ObservableStructure(component, bindings);
+    let removed;
 
     // Remove 2 elements from index 2
     component.data = ['parrot', 'anemone', 'blue', 'trumpet', 'sturgeon'];
     removed = component.data.splice(component.data.length - 3, 2);
     expect(removed).toEqual(['blue', 'trumpet']);
     await timeout();
-    expect(window.document.body.innerHTML).toEqual('["parrot", "anemone", "sturgeon"]');
+    expect(window.document.body.innerHTML).toEqual('["parrot","anemone","sturgeon"]');
 
     // Remove 1 element from index -2
     component.data = ['angel', 'clown', 'mandarin', 'sturgeon'];
     removed = component.data.splice(-2, 1);
     expect(removed).toEqual(['mandarin']);
     await timeout();
-    expect(window.document.body.innerHTML).toEqual('["angel", "clown", "sturgeon"]');
+    expect(window.document.body.innerHTML).toEqual('["angel","clown","sturgeon"]');
 
     // Remove all elements after index 2 (incl.)
     component.data = ['angel', 'clown', 'mandarin', 'sturgeon'];
     removed = component.data.splice(2);
     expect(removed).toEqual(['mandarin', 'sturgeon']);
     await timeout();
-    expect(window.document.body.innerHTML).toEqual('["angel", "clown"]');
+    expect(window.document.body.innerHTML).toEqual('["angel","clown"]');
 });
 
 test('Observable Array Of Objects', async () => {

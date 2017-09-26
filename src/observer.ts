@@ -117,12 +117,13 @@ export default class ObservableStructure {
                 const removed = [];
                 while (deleteCount--) {
                     removed.push($data.splice(start, 1)[0]);
-                    delete arr[$data.length];
+                    arr.length = $data.length;
                 }
                 for (const arg of args) {
                     $data.splice(start, 0, arg);
                     this.observeArrayDefineIndexProperty(arr, $data.length - 1, attrParent);
                 }
+                this.compileBinding(attrParent);
                 return removed;
             },
         });
