@@ -30,35 +30,43 @@ export default class TSF {
     }
 
     private process(component, domElement) {
-        domElement.innerHTML = component.$template;
+        domElement.innerHTML = this.prepareTemplate(component.$template);
         const textNodesBindings = this.processTextNodes(component, domElement);
         const _ = new ObservableStructure(component, textNodesBindings);
         this.processEvents(component, domElement);
         this.processComponents(domElement);
     }
 
+    private prepareTemplate(template) {
+        // replace {{ this.something }} to <text $innerHTML="this.something"></text>
+        template = template.replace(new RegExp('\{\{([^}]+)\}\}', 'g'), (match, expr) => {
+            return `<text $innerHTML="${expr}"></text>`;
+        });
+        return template;
+    }
+
     private processTextNodes(component, domElement, customVarNames = [], customVarValues = []) {
         let bindId = 0;
         const bindings: IBindings = {};
-        domElement.innerHTML = domElement.innerHTML.replace(new RegExp('\{\{([^}]+)\}\}', 'g'), (match, expr) => {
+        const matches = domElement.querySelectorAll('[\\$innerHTML]');
+        [].forEach.call(matches, (match) => {
+            const expr = match.getAttribute('$innerHTML');
+            const textNode = document.createTextNode('');
+            match.replaceWith(textNode);
             bindId++;
             bindings[bindId] = {
                 expr,
                 component,
                 customVarNames,
                 customVarValues,
-                textNode: document.createTextNode(''),
+                textNode,
                 evalFunction: new Function(customVarNames.join(','), 'return ' + expr),
                 compile: function apply() {
                     this.textNode.data = this.evalFunction.apply(this.component, this.customVarValues);
                 },
             };
             bindings[bindId].compile();
-            return `<div bind-id="${bindId}">bindId-${bindId}</div>`;
         });
-        for (const id of Object.keys(bindings)) {
-            domElement.querySelector(`[bind-id='${id}']`).replaceWith(bindings[id].textNode);
-        }
         return bindings;
     }
 
