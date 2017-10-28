@@ -3,11 +3,13 @@ export interface IBinding {
     component;
     customVarNames: string[];
     customVarValues: any[];
-    textNode: Text;
+    textNode;
     evalFunction;
     compile;
 }
 
 export interface IBindings {
-    [id: string]: IBinding;
+    [id: number]: IBinding;
+    push(IBinding);
+    concat(IBindings): IBindings;
 }

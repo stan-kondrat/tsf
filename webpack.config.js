@@ -1,6 +1,8 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
+const debug = (process.env.NODE_ENV !== 'production');
+
 const config = {
     entry: {
         tsf: './src/tsf.ts',
@@ -27,7 +29,7 @@ const config = {
     ]
 };
 
-if (process.env.NODE_ENV != 'production') {
+if (debug) {
     config.devtool = 'inline-source-map';
 }
 
