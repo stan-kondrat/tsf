@@ -1,13 +1,14 @@
 {
   "name": "tsf-web",
   "license": "MIT",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "TypeScript Web Framework",
   "main": "src/tsf.ts",
   "scripts": {
     "docs": "node_modules/.bin/docsify serve docs",
     "test": "node_modules/.bin/jest",
     "build": "NODE_ENV='production' node_modules/.bin/webpack -p",
+    "size": "gzip -c ./dist/tsf.min.js | wc -c",
     "serve": "node_modules/.bin/webpack-dev-server"
   },
   "author": "Stanislav Kondratyuk",

@@ -10,7 +10,7 @@ const config = {
     },
     output: {
         library: 'TSF',
-        filename: '[name].js',
+        filename: '[name]' + (debug ? '.js' : '.min.js'),
         path: path.resolve(__dirname, 'dist')
     },
     resolve: {

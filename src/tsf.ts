@@ -187,18 +187,18 @@ export default class TSF {
     }
 
     private processComponents(domElement) {
-        for (const [name, componentInstance] of this.initializedComponents) {
+        this.initializedComponents.forEach((componentInstance, name) => {
             const element = domElement.querySelector(name);
             if (element) {
                 this.process(componentInstance, element);
             }
-        }
-        for (const [name, componentClass] of this.componentClasses) {
+        });
+        this.componentClasses.forEach((componentClass, name) => {
             const matches = domElement.querySelectorAll(name);
             [].forEach.call(matches, (element) => {
                 this.process(new componentClass(), element);
             });
-        }
+        });
     }
 
     private newElement(html: string): HTMLElement {
