@@ -38,7 +38,7 @@ export default class ObservableStructure {
         }
     }
 
-    private compileBinding(obj, attrFullName) {
+    private compileBinding(obj, attrFullName, params = {}) {
 
         const bindings = this.allWatchedObjects.get(obj);
         nextFrame(() => {
@@ -50,7 +50,7 @@ export default class ObservableStructure {
                     // 'this.a.b'
                     // 'this.a'
                     if (binding.expr.indexOf(attr) !== -1) {
-                        binding.compile();
+                        binding.compile(params);
                     }
                     parentAttrPosition = attr.lastIndexOf('.');
                     attr = attrFullName.substr(0, parentAttrPosition);
@@ -96,12 +96,17 @@ export default class ObservableStructure {
     }
 
     private observeArray(arr, bindings, attrParent: string) {
+        if ('$data' in arr) {
+            return;
+        }
+
         const $data = [];
         Object.defineProperty(arr, '$data', { value: $data, writable: true });
         for (let i = 0; i < arr.length; i++) {
             $data[i] = arr[i];
             this.observeArrayDefineIndexProperty(arr, bindings, i, attrParent);
         }
+
         Object.defineProperty(arr, 'push', {
             configurable: false,
             enumerable: false,
@@ -114,7 +119,7 @@ export default class ObservableStructure {
                     this.observeArrayDefineIndexProperty(arr, bindings, length, attrParent);
                     length++;
                 }
-                this.compileBinding(arr, attrParent);
+                this.compileBinding(arr, attrParent, { type: 'push' });
                 return length;
             },
         });
@@ -152,7 +157,7 @@ export default class ObservableStructure {
             set: (value) => {
                 arr.$data[index] = value;
                 this.observe(value, bindings, attrParent + '.' + index + '.');
-                this.compileBinding(arr, attrParent);
+                this.compileBinding(arr, attrParent, { type: 'update', value: index });
             },
         });
     }

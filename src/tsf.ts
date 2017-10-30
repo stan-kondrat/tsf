@@ -39,18 +39,20 @@ export default class TSF {
         this.process(component, this.rootElement);
     }
 
-    private process(component, domElement, customTemplate = '') {
+    private process(component, domElement, customTemplate = '', customVarNames = [], customVarValues = []) {
         domElement.innerHTML = TSF.prepareTemplate(customTemplate || component.$template);
 
-        const dynamicBindings = this.prepareDynamic(component, domElement);
-        const textNodesBindings = this.processTextNodes(component, domElement);
-        const bindings = dynamicBindings.concat(textNodesBindings);
+        const dynamicBindingsIf = this.prepareDynamicIf(component, domElement);
+        const dynamicBindingsFor = this.prepareDynamicFor(component, domElement);
+        const textNodesBindings = this.processTextNodes(component, domElement, customVarNames, customVarValues);
+        const bindings = dynamicBindingsIf.concat(dynamicBindingsFor).concat(textNodesBindings);
 
         this.watcher.observe(component, bindings);
         this.processEvents(component, domElement);
         this.processComponents(domElement);
 
-        this.processDynamic(component, domElement, dynamicBindings);
+        this.processDynamic(component, domElement, dynamicBindingsIf);
+        this.processDynamic(component, domElement, dynamicBindingsFor);
     }
 
     private processTextNodes(component, domElement, customVarNames = [], customVarValues = []): IBindings {
@@ -92,7 +94,7 @@ export default class TSF {
         }
     }
 
-    private prepareDynamic(component, domElement): IBindings {
+    private prepareDynamicIf(component, domElement): IBindings {
         const bindings: IBindings = [];
         let match = domElement.querySelector('[\\$if]');
         while (match && match.getAttribute) {
@@ -112,9 +114,7 @@ export default class TSF {
                 evalFunction,
                 compile: () => {
                     if (evalFunction.apply(component)) {
-                        const div = document.createElement('div');
-                        div.innerHTML = html;
-                        genereatedElement = div.firstChild;
+                        genereatedElement = this.newElement(html);
                         textNode.parentNode.insertBefore(genereatedElement, textNode);
                         this.process(component, genereatedElement, genereatedElement.innerHTML);
                     } else {
@@ -127,6 +127,57 @@ export default class TSF {
             };
             bindings.push(binding);
             match = domElement.querySelector('[\\$if]');
+        }
+        return bindings;
+    }
+    private prepareDynamicFor(component, domElement): IBindings {
+        const bindings: IBindings = [];
+        let match = domElement.querySelector('[\\$for]');
+        while (match && match.getAttribute) {
+            const expr = match.getAttribute('$for');
+            match.removeAttribute('$for');
+            const html = match.outerHTML;
+            const textNode = document.createTextNode('');
+            const evalFunction = new Function('', 'return ' + expr);
+            match.parentNode.replaceChild(textNode, match);
+            const currentItems = [];
+            const binding = {
+                expr,
+                component,
+                customVarNames: [],
+                customVarValues: [],
+                textNode,
+                evalFunction,
+                compile: (params) => {
+                    if (params && params.type === 'update') {
+                        // do not re-render list, dom should be updated automatically
+                    } else if (params && params.type === 'push') {
+                        const items = evalFunction.apply(component);
+                        for (let index = currentItems.length; index < items.length; index++) {
+                            const newElement = this.newElement(html);
+                            textNode.parentNode.insertBefore(newElement, textNode);
+                            currentItems.push({ element: newElement });
+                            this.process(component, newElement, newElement.innerHTML, ['$index'], [index]);
+                        }
+                    } else {
+                        if (currentItems.length) {
+                            currentItems.forEach((item, index) => {
+                                item.element.remove();
+                            });
+                            currentItems.length = 0;
+                        }
+                        const items = evalFunction.apply(component);
+                        items.forEach((item, index) => {
+                            const newElement = this.newElement(html);
+                            textNode.parentNode.insertBefore(newElement, textNode);
+                            currentItems.push({ element: newElement });
+                            this.process(component, newElement, newElement.innerHTML, ['$index'], [index]);
+                        });
+                    }
+                },
+            };
+            bindings.push(binding);
+            match = domElement.querySelector('[\\$for]');
         }
         return bindings;
     }
@@ -148,5 +199,11 @@ export default class TSF {
                 this.process(new componentClass(), element);
             });
         }
+    }
+
+    private newElement(html: string): HTMLElement {
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        return div.firstChild as HTMLElement;
     }
 }

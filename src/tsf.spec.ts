@@ -143,3 +143,26 @@ test('If nested', async () => {
     await timeout();
     expect(document.querySelector('#app').innerHTML.replace(/\s/g, '')).toEqual('<div>A<div>B</div></div>');
 });
+
+test('For', async () => {
+    expect.assertions(3);
+    document.documentElement.innerHTML = '<div id="app"></div>';
+
+    const app = new TSF('#app');
+    class Main {
+        public $template = `<div $for="this.items">{{ this.items[$index] }}</div>`;
+        public items = ['a', 'b', '_'];
+    }
+    const main = new Main();
+    app.run(main);
+    await timeout();
+    expect(document.querySelector('#app').innerHTML).toEqual('<div>a</div><div>b</div><div>_</div>');
+
+    main.items[2] = 'c';
+    await timeout();
+    expect(document.querySelector('#app').innerHTML).toEqual('<div>a</div><div>b</div><div>c</div>');
+
+    main.items.push('d');
+    await timeout();
+    expect(document.querySelector('#app').innerHTML).toEqual('<div>a</div><div>b</div><div>c</div><div>d</div>');
+});
