@@ -1,6 +1,17 @@
 {
   "compilerOptions": {
+    "outDir": "./lib",
+    "module": "CommonJS",
     "target": "ES6",
-    "sourceMap": true
-  }
+    "lib": ["DOM", "ES5", "ES6", "DOM.Iterable", "ScriptHost"],
+    "declaration": true,
+    "noImplicitUseStrict": true
+  },
+  "files": [
+    "./src/index.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ]
 }

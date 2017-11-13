@@ -1,6 +1,6 @@
 /* tslint:disable:max-classes-per-file */
 
-import TSF from './tsf';
+import { TSF } from './tsf';
 
 async function timeout(time = 4) {
     return (new Promise((resolve, reject) => window.setTimeout(() => resolve(), time)));

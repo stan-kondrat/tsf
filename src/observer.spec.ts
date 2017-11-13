@@ -1,5 +1,4 @@
-import { IBindings } from './interfaces';
-import ObservableStructure from './observer';
+import { IBindings, ObservableStructure } from './observer';
 
 async function timeout(time = 4) {
     return (new Promise((resolve, reject) => window.setTimeout(() => resolve(), time)));
