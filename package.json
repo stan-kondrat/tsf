@@ -1,35 +1,38 @@
 {
   "name": "tsf-web",
   "license": "MIT",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "TypeScript Web Framework",
-  "main": "lib/index.js",
-  "typings": "lib/index.d.ts",
+  "main": "lib/tsf.js",
+  "types": "lib/tsf.d.ts",
   "scripts": {
-    "prepublish": "npm run build",
+    "prepare": "npm run build",
     "docs": "node_modules/.bin/docsify serve docs",
     "test": "node_modules/.bin/jest",
-    "build:compile": "node_modules/.bin/tsc",
-    "build:pack": "node_modules/.bin/small -i lib/tsf.js -o lib/tsf.bundle.js",
-    "build:minify": "node_modules/.bin/google-closure-compiler-js --createSourceMap=true --compilationLevel=ADVANCED lib/tsf.bundle.js > lib/tsf.bundle.min.js",
-    "build": "npm run build:compile && npm run build:pack && npm run build:minify && npm run size",
-    "size": "gzip -c lib/tsf.bundle.min.js | wc -c"
+    "build:clean": "node_modules/.bin/rimraf lib/",
+    "build:compile": "node_modules/.bin/tsc --target ES5 --outDir lib/",
+    "build": "npm run build:clean && npm run build:compile",
+    "size": "gzip -c lib/tsf.min.js | wc -c"
   },
   "author": "Stanislav Kondratyuk",
   "repository": "https://github.com/stan-kondrat/tsf.git",
   "dependencies": {
     "@types/jest": "^20.0.7",
     "@types/node": "^8.0.48",
-    "google-closure-compiler-js": "^20170910.0.1",
     "jest": "^20.0.4",
-    "small": "^0.2.9",
+    "rimraf": "^2.6.2",
     "ts-jest": "^20.0.14",
     "tslint": "^5.8.0",
     "typescript": "^2.6.1"
   },
   "jest": {
-    "transform": { "^.+\\.ts$": "<rootDir>/node_modules/ts-jest/preprocessor.js" },
+    "transform": {
+      "^.+\\.ts$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
     "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|js)$",
-    "moduleFileExtensions": [ "ts", "js" ]
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ]
   }
 }

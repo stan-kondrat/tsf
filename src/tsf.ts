@@ -1,4 +1,3 @@
-import nextFrame from './nextFrame';
 import { IBindings, ObservableStructure } from './observer';
 
 const EVENTS = [];
@@ -38,39 +37,40 @@ export class TSF {
         this.process(component, this.rootElement);
     }
 
-    private process(component, domElement, customTemplate = '', customVarNames = [], customVarValues = []) {
+    private process(component, domElement, customTemplate = '', contextVars = [], contextValues = []) {
         domElement.innerHTML = TSF.prepareTemplate(customTemplate || component.$template);
 
         const dynamicBindingsIf = this.prepareDynamicIf(component, domElement);
         const dynamicBindingsFor = this.prepareDynamicFor(component, domElement);
-        const textNodesBindings = this.processTextNodes(component, domElement, customVarNames, customVarValues);
-        const bindings = dynamicBindingsIf.concat(dynamicBindingsFor).concat(textNodesBindings);
+        const textNodesBindings = this.processTextNodes(component, domElement, contextVars, contextValues);
+        const attrBindings = this.processAttributes(component, domElement, contextVars, contextValues);
+        const bindings = dynamicBindingsIf.concat(dynamicBindingsFor).concat(textNodesBindings).concat(attrBindings);
 
         this.watcher.observe(component, bindings);
-        this.processEvents(component, domElement);
+        this.processEvents(component, domElement, contextVars, contextValues);
         this.processComponents(domElement);
 
         this.processDynamic(component, domElement, dynamicBindingsIf);
         this.processDynamic(component, domElement, dynamicBindingsFor);
     }
 
-    private processTextNodes(component, domElement, customVarNames = [], customVarValues = []): IBindings {
+    private processTextNodes(component, domElement, contextVars = [], contextValues = []): IBindings {
         const bindings: IBindings = [];
         const matches = domElement.querySelectorAll('[\\$innerHTML]');
         [].forEach.call(matches, (match) => {
             const expr = match.getAttribute('$innerHTML');
             const textNode = document.createTextNode('');
-            const evalFunction = new Function(customVarNames.join(','), 'return ' + expr);
+            const evalFunction = new Function(contextVars.join(','), 'return ' + expr);
             match.parentNode.replaceChild(textNode, match);
             const binding = {
                 expr,
                 component,
-                customVarNames,
-                customVarValues,
+                contextVars,
+                contextValues,
                 textNode,
                 evalFunction,
                 compile: () => {
-                    textNode.data = evalFunction.apply(component, customVarValues);
+                    textNode.data = evalFunction.apply(component, contextValues);
                 },
             };
             bindings.push(binding);
@@ -80,17 +80,49 @@ export class TSF {
         return bindings;
     }
 
-    private processEvents(component, domElement) {
+    private processEvents(component, domElement, contextVars = [], contextValues = []) {
         for (const event of EVENTS) {
             const matches = domElement.querySelectorAll('[\\$' + event + ']');
             [].forEach.call(matches, (match) => {
-                const listener = new Function('$event', match.getAttribute('$' + event));
+                const listener = new Function(contextVars.concat('$event').join(','), match.getAttribute('$' + event));
                 match.removeAttribute('$' + event);
                 match.addEventListener(event.substring(2), ($event) => {
-                    nextFrame(() => listener.call(component, $event));
+                    window.requestAnimationFrame(() => listener.apply(component, contextValues.concat($event)));
                 });
             });
         }
+    }
+
+    private processAttributes(component, domElement, contextVars = [], contextValues = []) {
+        const bindings: IBindings = [];
+        const matches = domElement.parentNode.querySelectorAll('[\\$attr]');
+        [].forEach.call(matches, (match) => {
+            const expr = match.getAttribute('$attr');
+            const textNode = document.createTextNode('');
+            const evalFunction = new Function(contextVars.join(','), 'return ' + expr);
+            const binding = {
+                expr,
+                component,
+                contextVars: [],
+                contextValues: [],
+                textNode,
+                evalFunction,
+                compile: () => {
+                    const attributes = evalFunction.apply(component, contextValues);
+                    Object.keys(attributes).forEach((attr) => {
+                        if (attributes[attr] === null) {
+                            match.removeAttribute(attr);
+                        } else {
+                            match.setAttribute(attr, attributes[attr]);
+                        }
+                    });
+                },
+            };
+            bindings.push(binding);
+            binding.compile();
+            match.removeAttribute('$attr');
+        });
+        return bindings;
     }
 
     private prepareDynamicIf(component, domElement): IBindings {
@@ -107,11 +139,15 @@ export class TSF {
             const binding = {
                 expr,
                 component,
-                customVarNames: [],
-                customVarValues: [],
+                contextVars: [],
+                contextValues: [],
                 textNode,
                 evalFunction,
                 compile: () => {
+                    if (genereatedElement) {
+                        genereatedElement.remove();
+                        genereatedElement = null;
+                    }
                     if (evalFunction.apply(component)) {
                         genereatedElement = this.newElement(html);
                         textNode.parentNode.insertBefore(genereatedElement, textNode);
@@ -143,8 +179,8 @@ export class TSF {
             const binding = {
                 expr,
                 component,
-                customVarNames: [],
-                customVarValues: [],
+                contextVars: [],
+                contextValues: [],
                 textNode,
                 evalFunction,
                 compile: (params) => {

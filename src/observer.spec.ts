@@ -1,8 +1,10 @@
 import { IBindings, ObservableStructure } from './observer';
 
-async function timeout(time = 4) {
+async function timeout(time = 10) {
     return (new Promise((resolve, reject) => window.setTimeout(() => resolve(), time)));
 }
+
+window.requestAnimationFrame = (cb) => window.setTimeout(cb, 5);
 
 const prepareBindings = (component, expr) => {
     document.body.innerHTML = 'textNode';

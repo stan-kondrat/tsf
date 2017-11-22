@@ -8,9 +8,10 @@ export declare class TSF {
     register(name: any, componentClass: any): void;
     component(name: any, componentInstance: any): void;
     run(component: any): void;
-    private process(component, domElement, customTemplate?, customVarNames?, customVarValues?);
-    private processTextNodes(component, domElement, customVarNames?, customVarValues?);
-    private processEvents(component, domElement);
+    private process(component, domElement, customTemplate?, contextVars?, contextValues?);
+    private processTextNodes(component, domElement, contextVars?, contextValues?);
+    private processEvents(component, domElement, contextVars?, contextValues?);
+    private processAttributes(component, domElement, contextVars?, contextValues?);
     private prepareDynamicIf(component, domElement);
     private prepareDynamicFor(component, domElement);
     private processDynamic(component, domElement, bindings);

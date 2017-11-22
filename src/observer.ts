@@ -1,5 +1,3 @@
-import nextFrame from './nextFrame';
-
 export interface IBinding {
     expr;
     component;
@@ -56,7 +54,7 @@ export class ObservableStructure {
     private compileBinding(obj, attrFullName, params = {}) {
 
         const bindings = this.allWatchedObjects.get(obj);
-        nextFrame(() => {
+        window.requestAnimationFrame(() => {
             bindings.forEach((binding) => {
                 let attr = attrFullName;
                 let parentAttrPosition;

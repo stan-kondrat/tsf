@@ -2,9 +2,12 @@
 
 import { TSF } from './tsf';
 
-async function timeout(time = 4) {
+
+async function timeout(time = 10) {
     return (new Promise((resolve, reject) => window.setTimeout(() => resolve(), time)));
 }
+
+window.requestAnimationFrame = (cb) => window.setTimeout(cb, 0);
 
 test('Templates', async () => {
     expect.assertions(1);
@@ -165,4 +168,47 @@ test('For', async () => {
     main.items.push('d');
     await timeout();
     expect(document.querySelector('#app').innerHTML).toEqual('<div>a</div><div>b</div><div>c</div><div>d</div>');
+});
+
+test('For with inline action', async () => {
+    expect.assertions(2);
+    document.documentElement.innerHTML = '<div id="app"></div>';
+
+    const app = new TSF('#app');
+    class Main {
+        public $template = `<b $for="this.items"><i $onclick="$event.target.innerHTML = this.items[$index]"></i></b>`;
+        public items = ['a', 'b', 'c'];
+    }
+    const main = new Main();
+    app.run(main);
+    await timeout();
+    expect(document.querySelector('#app').innerHTML).toEqual('<b><i></i></b><b><i></i></b><b><i></i></b>');
+
+    Array.from(document.querySelectorAll('i')).forEach((element) => element.click())
+    await timeout();
+    expect(document.querySelector('#app').innerHTML).toEqual('<b><i>a</i></b><b><i>b</i></b><b><i>c</i></b>');
+});
+
+test('Attributes', async () => {
+    expect.assertions(3);
+    document.documentElement.innerHTML = '<div id="app"></div>';
+
+    const app = new TSF('#app');
+    class Main {
+        public $template = `<h1 $attr="{ title: this.title }">Hello World</h1>`;
+        public title = null;
+    }
+    const main = new Main();
+    app.run(main);
+
+    await timeout();
+    expect(document.querySelector('#app').innerHTML).toEqual('<h1>Hello World</h1>');
+
+    main.title = '';
+    await timeout();
+    expect(document.querySelector('#app').innerHTML).toEqual('<h1 title="">Hello World</h1>');
+
+    main.title = 'Hello Stranger';
+    await timeout();
+    expect(document.querySelector('#app').innerHTML).toEqual('<h1 title="Hello Stranger">Hello World</h1>');
 });
